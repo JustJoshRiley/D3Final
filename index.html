@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body>
+    <style>
+        /* Put the box in the center of the page */
+        body, html {
+          height: 100%;
+          padding-top: 5%;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          flex-direction: column;
+        }
+      
+        #svg {
+          border: 1px solid;
+        }
+
+        .Examples {
+            height: 100%;
+            width: fit-content;
+            /* padding: 10%; */
+            display: grid;
+            grid-template-columns: auto;
+        }
+    </style>
+    <h1>1st 25 Country Happiness 2019</h1>
+    <div class="Examples">
+        <div class="First_Example">
+            <p>Top 25 happiest countries based on overall score : </p>
+            <svg style="background-color: rgb(226, 226, 226);" id="svg" width="800" height="600"></svg>
+        </div>
+    
+        <div>
+            <p>based on gdp per capita : </p>
+            <svg style="background-color: rgb(226, 226, 226);" id="svgWealth" width="800" height="600"></svg>
+        </div>
+
+        <div>
+            <p>based on Social Support : </p>
+            <svg style="background-color: rgb(226, 226, 226);" id="svgSS" width="800" height="600"></svg>
+        </div>
+    </div>
+
+
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script>
+    async function handleData() {
+        const data = await d3.csv('./data/2019.csv')
+        // get the first 25
+        first25 = data.slice(0, 15)
+        console.log(data)
+        const margin = { top: 10, right: -30, bottom: 20, left: 30 }
+        const width = 800 - (margin.left + margin.right)
+        const height = 600 - (margin.top + margin.bottom)
+
+        // x scale 
+        const xscale = d3.scaleBand()
+            .domain(first25.map(d => d["Country or region"]))
+            .range([margin.left, width])
+            .padding(.05)
+
+        // y scale 
+        const popExtent = d3.extent(first25, d => d.Score)
+        const yscale = d3.scaleLinear()
+            .domain(popExtent)
+            .range([height, margin.top])
+
+        // Select the SVG
+        // First Graph
+        const svg = d3.select('#svg')
+
+        // Make bottom  Axis
+        const bottomAxis = d3.axisBottom(xscale)
+        svg
+            .append('g')
+            .attr('transform', `translate(${0}, ${height})`)
+            .call(bottomAxis)
+
+
+        // Make left Axis
+        const leftAxis = d3.axisLeft(yscale)
+            .tickSize(-width) // Set the width of the ticks
+            .tickValues([7.0, 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.8, 7.9])
+        svg
+            .append('g')
+            .attr('transform', `translate(${margin.left}, 0)`)
+            .call(leftAxis)
+
+        const colorScale = d3.scaleSequential()
+            .domain(popExtent)
+            .interpolator(d3.interpolateCubehelixDefault)
+
+        // Make Bars
+        // Bar Group
+        const barGroup = svg.append('g')
+        // Make Bars
+        // Make the bars
+        barGroup 
+            .selectAll('rect')
+            .data(first25)
+            .enter()
+            .append('rect')
+            .attr('class', 'bar')
+            .attr('x', (d, i) => {
+                console.log(d)
+                return xscale(d["Country or region"])
+            })
+            .attr('y', d => yscale(d.Score))
+            .attr('width', xscale.bandwidth())
+            .attr('height', d => height - yscale(d.Score))
+            .attr('fill', d => colorScale(d.Score))
+    }
+    // Second graph
+    async function handleWealthData() {
+        const data = await d3.csv('./data/2019.csv')
+        // get the first 25
+        first25 = data.slice(0, 15)
+        console.log(data)
+        const margin = { top: 10, right: -30, bottom: 20, left: 30 }
+        const width = 800 - (margin.left + margin.right)
+        const height = 600 - (margin.top + margin.bottom)
+
+        // x scale 
+        const xscale = d3.scaleBand()
+            .domain(first25.map(d => d["Country or region"]))
+            .range([margin.left, width])
+            .padding(.05)
+
+        // y scale 
+        const popExtent = d3.extent(first25, d => d["GDP per capita"])
+        const yscale = d3.scaleLinear()
+            .domain(popExtent)
+            .range([height, margin.top])
+
+        // Select the SVG
+        // First Graph
+        const svg = d3.select('#svgWealth')
+
+        // Make bottom  Axis
+        const bottomAxis = d3.axisBottom(xscale)
+        svg
+            .append('g')
+            .attr('transform', `translate(${0}, ${height})`)
+            .call(bottomAxis)
+
+
+        // Make left Axis
+        const leftAxis = d3.axisLeft(yscale)
+            .tickFormat(d3.format('.2s'))
+            .ticks(12)
+            .tickSize(-width) // Set the width of the ticks
+            // .tickValues([0.200, 0.300, 0.400, 0.500, 0.600, 0.700, 0.800, 0.900, 1.000, 1.100, 1.200, 1.300])
+        svg
+            .append('g')
+            .attr('transform', `translate(${margin.left}, 0)`)
+            .call(leftAxis)
+
+        const colorScale = d3.scaleSequential()
+            .domain(popExtent)
+            .interpolator(d3.interpolateCubehelixDefault)
+
+        // Make Bars
+        // Bar Group
+        const barGroup = svg.append('g')
+        // Make Bars
+        // Make the bars
+        barGroup 
+            .selectAll('rect')
+            .data(first25)
+            .enter()
+            .append('rect')
+            .attr('class', 'bar')
+            .attr('x', (d, i) => {
+                console.log(d)
+                return xscale(d["Country or region"])
+            })
+            .attr('y', d => yscale(d["GDP per capita"]))
+            .attr('width', xscale.bandwidth())
+            .attr('height', d => {
+                console.log(d)
+                return height - yscale(d["GDP per capita"])
+            })
+            .attr('fill', d => colorScale(d["GDP per capita"]))        
+    }
+
+    // third graph
+    async function handleSSData() {
+        const data = await d3.csv('./data/2019.csv')
+        // get the first 25
+        first25 = data.slice(0, 15)
+        console.log(data)
+        const margin = { top: 10, right: -30, bottom: 20, left: 30 }
+        const width = 800 - (margin.left + margin.right)
+        const height = 600 - (margin.top + margin.bottom)
+
+        // x scale 
+        const xscale = d3.scaleBand()
+            .domain(first25.map(d => d["Country or region"]))
+            .range([margin.left, width])
+            .padding(.05)
+
+        // y scale 
+        const popExtent = d3.extent(first25, d => d["Social support"])
+        const yscale = d3.scaleLinear()
+            .domain(popExtent)
+            .range([height, margin.top])
+
+        // Select the SVG
+        // First Graph
+        const svg = d3.select('#svgSS')
+
+        // Make bottom  Axis
+        const bottomAxis = d3.axisBottom(xscale)
+        svg
+            .append('g')
+            .attr('transform', `translate(${0}, ${height})`)
+            .call(bottomAxis)
+
+
+        // Make left Axis
+        const leftAxis = d3.axisLeft(yscale)
+            .tickFormat(d3.format('.2s'))
+            .ticks(12)
+            .tickSize(-width) // Set the width of the ticks
+            // .tickValues([0.200, 0.300, 0.400, 0.500, 0.600, 0.700, 0.800, 0.900, 1.000, 1.100, 1.200, 1.300])
+        svg
+            .append('g')
+            .attr('transform', `translate(${margin.left}, 0)`)
+            .call(leftAxis)
+
+        const colorScale = d3.scaleSequential()
+            .domain(popExtent)
+            .interpolator(d3.interpolateCubehelixDefault)
+
+        // Make Bars
+        // Bar Group
+        const barGroup = svg.append('g')
+        // Make Bars
+        // Make the bars
+        barGroup 
+            .selectAll('rect')
+            .data(first25)
+            .enter()
+            .append('rect')
+            .attr('class', 'bar')
+            .attr('x', (d, i) => {
+                console.log(d)
+                return xscale(d["Country or region"])
+            })
+            .attr('y', d => yscale(d["Social support"]))
+            .attr('width', xscale.bandwidth())
+            .attr('height', d => {
+                console.log(d)
+                return height - yscale(d["Social support"])
+            })
+            .attr('fill', d => colorScale(d["Social support"]))
+
+        
+    }
+
+
+    handleData()
+    handleWealthData()
+    handleSSData()
+
+
+
+  </script>
+
+</body>
+
+</html>
